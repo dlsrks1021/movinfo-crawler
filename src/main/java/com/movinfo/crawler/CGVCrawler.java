@@ -18,22 +18,24 @@ import java.util.List;
 
 public class CGVCrawler
 {
-    private WebDriver firefoxDriver;
+    private WebDriver driver;
     private static final String CGV_IMAX_URL = "http://www.cgv.co.kr/reserve/show-times/?areacode=01&theaterCode=0013&date=";
 
     public CGVCrawler(){
-        // initDriver();
+        initDriver();
     }
 
-    private WebDriver initDriver(){
+    public CGVCrawler(WebDriver driver){
+        this.driver = driver;
+    }
+
+    private void initDriver(){
 
         FirefoxOptions options = new FirefoxOptions();
-        firefoxDriver = new FirefoxDriver(options);
-
-        return firefoxDriver;
+        driver = new FirefoxDriver(options);
     }
 
-    private static void accessToCGVWeb(WebDriver driver, LocalDate checkDate){
+    private void accessToCGVWeb(LocalDate checkDate){
         String cgvUrl = CGV_IMAX_URL + checkDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
         driver.get(cgvUrl);
@@ -42,11 +44,11 @@ public class CGVCrawler
         wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("ifrm_movie_time_table")));
     }
 
-    private static int getCurrentHour(){
+    private int getCurrentHour(){
         return Integer.parseInt(LocalTime.now().format(DateTimeFormatter.ofPattern("HH")));
     }
 
-    private static boolean isCheckDateUrlOpen(WebDriver driver, LocalDate checkDate){
+    private boolean isCheckDateUrlOpen(LocalDate checkDate){
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("on")));
@@ -63,7 +65,7 @@ public class CGVCrawler
         return false;
     }
 
-    private static List<String> getOpenMovieList(WebDriver driver, LocalDate checkDate){
+    private List<String> getOpenMovieList(){
         List<String> openMovieList = new ArrayList<>();
         List<WebElement> elementList = driver.findElements(By.className("col-times"));
         for(WebElement element : elementList){
@@ -82,21 +84,23 @@ public class CGVCrawler
         return openMovieList;
     }
 
-    public static void checkImaxMovie(WebDriver driver, LocalDate checkDate){
+    public List<String> checkImaxMovie(LocalDate checkDate){
+
+        List<String> openMovieList = new ArrayList<>();
+
         // Return false if cur time is not work hour
         int hour = getCurrentHour();
         if (hour >= 22 || hour < 6){
-            return;
+            return openMovieList;
         }
 
-        accessToCGVWeb(driver, checkDate);
+        accessToCGVWeb(checkDate);
 
-        if (isCheckDateUrlOpen(driver, checkDate)){
-            List<String> openMovieList = getOpenMovieList(driver, checkDate);
-            for (String openMovie : openMovieList){
-                System.out.println(openMovie);
-            }            
+        if (isCheckDateUrlOpen(checkDate)){
+            openMovieList = getOpenMovieList();
         }
+
+        return openMovieList;
     }
 }
 
