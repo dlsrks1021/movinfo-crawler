@@ -124,7 +124,7 @@
             <archive>
               <manifest>
                 <addClasspath>true</addClasspath>
-                <mainClass>com.movinfo.App</mainClass>
+                <mainClass>com.movinfo.crawler.App</mainClass>
               </manifest>
             </archive>
           </configuration>
