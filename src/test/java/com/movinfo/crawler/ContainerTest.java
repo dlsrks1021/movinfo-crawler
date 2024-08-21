@@ -36,7 +36,7 @@ public class ContainerTest {
     private static WebDriver driver;
 
     @Container
-    private static GenericContainer<?> seleniumContainer = new GenericContainer<>(DockerImageName.parse("seleniarm/standalone-firefox:latest"))
+    private static GenericContainer<?> seleniumContainer = new GenericContainer<>(DockerImageName.parse("selenium/standalone-firefox:latest"))
             .withLogConsumer(new Slf4jLogConsumer(logger))
             .withStartupTimeout(Duration.ofMinutes(5))
             .withExposedPorts(4444);            
