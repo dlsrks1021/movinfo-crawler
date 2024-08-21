@@ -28,9 +28,11 @@ COPY --from=build /app/target/*.jar crawler.jar
 ENV TZ=Asia/Seoul
 
 # tzdata 설치 및 시간대 설정
-RUN apt-get update && apt-get install -y tzdata && \
+RUN mkdir -p /var/lib/apt/lists/partial && \
+    apt-get update && apt-get install -y tzdata && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone
+    echo $TZ > /etc/timezone && \
+    rm -rf /var/lib/apt/lists/*
 
 # 크론 설정
 COPY cron-crawling.sh /usr/local/bin/cron-crawling.sh
