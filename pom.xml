@@ -6,7 +6,7 @@
 
   <groupId>com.movinfo.crawler</groupId>
   <artifactId>movinfo-crawler</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>latest</version>
 
   <name>movinfo-crawler</name>
   <!-- FIXME change it to the project's website -->
