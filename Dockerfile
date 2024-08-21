@@ -43,4 +43,5 @@ RUN chmod 0644 /etc/cron.d/cron-crawling
 
 # 실행 및 모니터링
 CMD service cron restart && \
+    touch /var/log/cron.log && \
     tail -F /var/log/cron.log
