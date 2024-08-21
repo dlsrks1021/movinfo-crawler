@@ -28,6 +28,7 @@ COPY --from=build /app/target/*.jar crawler.jar
 ENV TZ=Asia/Seoul
 
 # tzdata 설치 및 시간대 설정
+USER root
 RUN mkdir -p /var/lib/apt/lists/partial && \
     apt-get update && apt-get install -y tzdata && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
