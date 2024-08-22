@@ -12,7 +12,7 @@ RUN mvn dependency:go-offline -B
 
 # 소스 코드를 복사하고 빌드
 COPY src ./src
-RUN mvn clean package shade:shade -DskipTests
+RUN mvn clean package -DskipTests
 
 # 실제 애플리케이션이 실행될 이미지를 위한 단계
 ARG TARGETARCH
