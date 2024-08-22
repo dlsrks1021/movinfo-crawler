@@ -22,13 +22,6 @@ jobs:
                 username: ${{ secrets.DOCKER_USERNAME }}
                 password: ${{ secrets.DOCKER_PASSWORD }}
 
-            - name: Set up Maven
-              uses: actions/setup-java@v3
-              with:
-                distribution: 'temurin'
-                java-version: '17'
-                cache: maven
-
             - name: Build and Push Docker Image
               uses: docker/build-push-action@v5
               with:
