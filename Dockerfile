@@ -1,7 +1,7 @@
 # Dockerfile
 
 # Maven 빌드
-FROM maven:3.9.0-eclipse-temurin-17 as build
+FROM maven:3.9.0-eclipse-temurin-8 as build
 
 # 작업 디렉토리 설정
 WORKDIR /app
