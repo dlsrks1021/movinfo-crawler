@@ -7,6 +7,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chromium.ChromiumOptions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import java.time.Duration;
@@ -30,9 +32,11 @@ public class CGVCrawler
     }
 
     private void initDriver(){
-        FirefoxOptions options = new FirefoxOptions();
-        options.addArguments("-headless");
-        driver = new FirefoxDriver(options);
+        // FirefoxOptions options = new FirefoxOptions();
+        // ChromiumOptions options = new ChromiumOptions();
+        // options.addArguments("-headless");
+        // driver = new FirefoxDriver(options);
+        driver = new ChromeDriver();
     }
 
     private void accessToCGVWeb(LocalDate checkDate){
