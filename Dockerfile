@@ -20,7 +20,8 @@ FROM selenium/standalone-firefox:latest
 WORKDIR /app
 
 # 빌드된 JAR 파일을 복사
-COPY --from=build /app/target/*.jar crawler.jar
+# COPY --from=build /app/target/*.jar crawler.jar
+COPY --from=build /app/target/*.jar .
 
 # 시간대를 Asia/Seoul로 설정
 ENV TZ=Asia/Seoul
