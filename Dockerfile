@@ -12,9 +12,9 @@ COPY src ./src
 RUN mvn clean package shade:shade -DskipTests
 
 # 실제 애플리케이션이 실행될 이미지를 위한 단계
-# ARG TARGETARCH
-# FROM --platform=${TARGETARCH} selenium/standalone-firefox:latest
-FROM selenium/standalone-firefox:latest
+ARG TARGETARCH
+FROM --platform=${TARGETARCH} selenium/standalone-firefox:latest
+# FROM selenium/standalone-firefox:latest
 
 # 작업 디렉토리 설정
 WORKDIR /app

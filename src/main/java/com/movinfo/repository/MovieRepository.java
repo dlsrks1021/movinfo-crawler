@@ -26,6 +26,7 @@ public class MovieRepository {
             Document doc = new Document("name", movie.getName())
                                 .append("date", movie.getDate());
             collection.insertOne(doc);
+            System.out.println(movie.getName() + "-" + movie.getDate() + " - saved");
         } else{
             // throw new IllegalArgumentException();
         }
