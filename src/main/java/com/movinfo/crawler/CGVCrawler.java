@@ -34,6 +34,8 @@ public class CGVCrawler
     private void initDriver(){
         WebDriverManager.firefoxdriver().setup();
         FirefoxOptions options = new FirefoxOptions();
+        options.addArguments("no-sandbox")
+               .addArguments("headless");
         driver = new FirefoxDriver(options);
     }
 
