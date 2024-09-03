@@ -7,8 +7,8 @@ FROM maven:3.9.9-eclipse-temurin-17 as build
 WORKDIR /app
 
 # 소스 코드를 복사하고 빌드
-COPY pom.xml .
-COPY src ./src
+COPY ../pom.xml .
+COPY ../src ./src
 RUN mvn clean package shade:shade -DskipTests
 
 # 실제 애플리케이션이 실행될 이미지를 위한 단계

@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - '**'  # 모든 브랜치에 대해 트리거
+    paths:
+      - 'build/**'
+      - 'src/**'
+      - 'pom.xml'
 
 jobs:
   build:
@@ -28,7 +32,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
+          file: ./build/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: |
             dlsrks1021/movinfo-crawler:latest
