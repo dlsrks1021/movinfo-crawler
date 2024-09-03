@@ -7,8 +7,8 @@ FROM maven:3.9.9-eclipse-temurin-17 as build
 WORKDIR /app
 
 # 소스 코드를 복사하고 빌드
-COPY ../pom.xml .
-COPY ../src ./src
+COPY pom.xml .
+COPY src ./src
 RUN mvn clean package shade:shade -DskipTests
 
 # 실제 애플리케이션이 실행될 이미지를 위한 단계
@@ -35,7 +35,7 @@ RUN mkdir -p /var/lib/apt/lists/partial && \
     rm -rf /var/lib/apt/lists/*
 
 # 크론 설정
-COPY cron-crawling.sh /usr/local/bin/cron-crawling.sh
+COPY build/cron-crawling.sh /usr/local/bin/cron-crawling.sh
 RUN chmod +x /usr/local/bin/cron-crawling.sh
 RUN echo "0 0/5 * * * /usr/local/bin/cron-crawling.sh >> /var/log/cron.log 2>&1" > /etc/cron.d/cron-crawling
 RUN chmod 0644 /etc/cron.d/cron-crawling
