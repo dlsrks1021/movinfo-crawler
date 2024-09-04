@@ -25,11 +25,12 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
+
     <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-firefox-driver -->
     <dependency>
         <groupId>org.seleniumhq.selenium</groupId>
         <artifactId>selenium-firefox-driver</artifactId>
-        <version>4.23.1</version>
+        <version>4.24.0</version>
     </dependency>
 
       <!-- https://mvnrepository.com/artifact/org.assertj/assertj-core -->
@@ -69,18 +70,19 @@
         <version>5.11.0</version>
         <scope>test</scope>
     </dependency>
+
     <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-chromium-driver -->
     <dependency>
         <groupId>org.seleniumhq.selenium</groupId>
         <artifactId>selenium-chromium-driver</artifactId>
-        <version>4.1.0</version>
+        <version>4.24.0</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java -->
     <dependency>
         <groupId>org.seleniumhq.selenium</groupId>
         <artifactId>selenium-java</artifactId>
-        <version>4.6.0</version>
+        <version>4.24.0</version>
     </dependency>
 
     <dependency>
