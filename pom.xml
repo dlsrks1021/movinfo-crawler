@@ -71,10 +71,10 @@
         <scope>test</scope>
     </dependency>
 
-    <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-chromium-driver -->
+    <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-remote-driver -->
     <dependency>
         <groupId>org.seleniumhq.selenium</groupId>
-        <artifactId>selenium-chromium-driver</artifactId>
+        <artifactId>selenium-remote-driver</artifactId>
         <version>4.24.0</version>
     </dependency>
 

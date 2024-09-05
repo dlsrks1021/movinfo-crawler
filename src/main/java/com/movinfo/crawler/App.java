@@ -27,6 +27,7 @@ public class App
             
             for (String movie : openMovieList){
                 String date = localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+                System.out.println("Find Movie - " + movie + " : " + date);
                 movieController.registerMovie(movie, date);
             }
         }
