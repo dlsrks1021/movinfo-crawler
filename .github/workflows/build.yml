@@ -5,6 +5,7 @@ on:
     branches:
       - '**'  # 모든 브랜치에 대해 트리거
     paths:
+      - '.github/workflows/**'
       - 'build/**'
       - 'src/**'
       - 'pom.xml'
