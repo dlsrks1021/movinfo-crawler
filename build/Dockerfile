@@ -6,7 +6,7 @@ FROM openjdk:17
 WORKDIR /app
 
 # 빌드된 JAR 파일을 복사
-COPY /app/target/movinfo*.jar crawler.jar
+COPY target/movinfo*.jar crawler.jar
 
 # 시간대를 Asia/Seoul로 설정
 ENV TZ=Asia/Seoul
