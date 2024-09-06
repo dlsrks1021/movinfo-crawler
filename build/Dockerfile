@@ -1,27 +1,12 @@
 # Dockerfile
 
-# Maven 빌드
-FROM maven:3.9.9-eclipse-temurin-17 as build
-
-# 작업 디렉토리 설정
-WORKDIR /app
-
-# 소스 코드를 복사하고 빌드
-COPY pom.xml .
-COPY src ./src
-RUN mvn clean package shade:shade -DskipTests
-
-# 실제 애플리케이션이 실행될 이미지를 위한 단계
-ARG TARGETARCH
-FROM --platform=${TARGETARCH} selenium/standalone-chromium:latest
-# FROM selenium/standalone-firefox:latest
+FROM maven:3.9.9-eclipse-temurin-17
 
 # 작업 디렉토리 설정
 WORKDIR /app
 
 # 빌드된 JAR 파일을 복사
-# COPY --from=build /app/target/*.jar crawler.jar
-COPY --from=build /app/target/*.jar .
+COPY target/movinfo*.jar crawler.jar
 
 # 시간대를 Asia/Seoul로 설정
 ENV TZ=Asia/Seoul

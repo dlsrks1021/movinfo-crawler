@@ -1,16 +1,17 @@
 package com.movinfo.crawler;
 
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chromium.ChromiumOptions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -24,19 +25,23 @@ public class CGVCrawler
     private static final String CGV_IMAX_URL = "http://www.cgv.co.kr/reserve/show-times/?areacode=01&theaterCode=0013&date=";
 
     public CGVCrawler(){
-        initDriver();
+        try {
+            initDriver();    
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     public CGVCrawler(WebDriver driver){
         this.driver = driver;
     }
 
-    private void initDriver(){
-        // FirefoxOptions options = new FirefoxOptions();
-        // ChromiumOptions options = new ChromiumOptions();
-        // options.addArguments("-headless");
-        // driver = new FirefoxDriver(options);
-        driver = new ChromeDriver();
+    private void initDriver() throws MalformedURLException{
+        FirefoxOptions options = new FirefoxOptions();
+
+        URL remoteUrl = new URL("http://selenium:4444/wd/hub");
+        driver = new RemoteWebDriver(remoteUrl, options);
+        
     }
 
     private void accessToCGVWeb(LocalDate checkDate){
