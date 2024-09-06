@@ -1,3 +1,3 @@
 #!/bin/bash
 
-java -jar /app/crawler.jar
+/opt/java/openjdk/bin/java -jar /app/crawler.jar

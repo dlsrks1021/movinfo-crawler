@@ -22,7 +22,7 @@ RUN mkdir -p /var/lib/apt/lists/partial && \
 # 크론 설정
 COPY build/cron-crawling.sh /usr/local/bin/cron-crawling.sh
 RUN chmod +x /usr/local/bin/cron-crawling.sh
-RUN echo "0 0/5 * * * /usr/local/bin/cron-crawling.sh >> /var/log/cron.log 2>&1" > /etc/cron.d/cron-crawling
+RUN echo "0/5 * * * * /usr/local/bin/cron-crawling.sh >> /var/log/cron.log 2>&1" > /etc/cron.d/cron-crawling
 RUN chmod 0644 /etc/cron.d/cron-crawling
 
 # 실행 및 모니터링
