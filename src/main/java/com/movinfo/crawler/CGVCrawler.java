@@ -9,6 +9,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -60,7 +61,12 @@ public class CGVCrawler
     private boolean isCheckDateUrlOpen(LocalDate checkDate){
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("on")));
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("on")));
+        } catch (TimeoutException e) {
+            return false;
+        }
+        
 
         List<WebElement> elementCurrentUrlDay = driver.findElements(By.className("on"));
 
