@@ -15,10 +15,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CGVCrawler
 {
@@ -45,35 +46,43 @@ public class CGVCrawler
         
     }
 
-    private void accessToCGVWeb(LocalDate checkDate){
-        String cgvUrl = CGV_IMAX_URL + checkDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-
-        driver.get(cgvUrl);
+    private boolean accessToCGVWeb(LocalDate checkDate){
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("ifrm_movie_time_table")));
-    }
 
-    private int getCurrentHour(){
-        return Integer.parseInt(LocalTime.now().format(DateTimeFormatter.ofPattern("HH")));
-    }
-
-    private boolean isCheckDateUrlOpen(LocalDate checkDate){
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-
-        try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("on")));
-        } catch (TimeoutException e) {
-            return false;
-        }
+        int retryCountConnect = 2;
+        for (int i = 0; i < retryCountConnect; ++i){
+            // Move to CGV URL and switch to iframe
+            try{
+                if (driver.getCurrentUrl().equals("about:blank") || i > 0){
+                    String cgvUrl = CGV_IMAX_URL + checkDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         
+                    if (i > 0){
+                        driver.switchTo().defaultContent();
+                    }
+                    driver.get(cgvUrl);
+                    wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("ifrm_movie_time_table")));
+                }
+    
+                wait.until(ExpectedConditions.presenceOfElementLocated(By.className("item")));
+            } catch (TimeoutException e){
+                System.out.println("Timeout to access CGV");
+                return false;
+            }
 
-        List<WebElement> elementCurrentUrlDay = driver.findElements(By.className("on"));
-
-        for (WebElement e : elementCurrentUrlDay){
-            String urlDay = e.findElement(By.tagName("strong")).getText();
-            if (!urlDay.isBlank() && checkDate.getDayOfMonth() == Integer.parseInt(urlDay)){
-                return true;
+            // Check the target date is open or not
+            List<WebElement> itemElements = driver.findElements(By.className("item"));
+            for (WebElement item : itemElements){
+                try {
+                    for (WebElement li : item.findElements(By.tagName("li"))){
+                        WebElement dayElement = li.findElement(By.tagName("strong"));
+                        if (checkDate.getDayOfMonth() == Integer.parseInt(dayElement.getText())){
+                            return true;
+                        }
+                    }
+                } catch (NoSuchElementException | NumberFormatException e) {
+                    continue;
+                }
             }
         }
 
@@ -99,23 +108,35 @@ public class CGVCrawler
         return openMovieList;
     }
 
-    public List<String> checkImaxMovie(LocalDate checkDate){
+    private void moveToNextDay(LocalDate checkDate) {
+        List<WebElement> itemElements = driver.findElements(By.className("item"));
+        for (WebElement item : itemElements){
+            try {
+                for (WebElement li : item.findElements(By.tagName("li"))){
+                    WebElement dayElement = li.findElement(By.tagName("strong"));
+                    if (checkDate.getDayOfMonth() == Integer.parseInt(dayElement.getText())){
+                        li.findElement(By.tagName("a")).click();
+                        return;
+                    }
+                }
+            } catch (NoSuchElementException | NumberFormatException e) {
+                continue;
+            }
+        }
+    }
 
-        List<String> openMovieList = new ArrayList<>();
+    public Map<String, List<String>> checkImaxMovie(LocalDate checkDate){
+        Map<String, List<String>> openMovieMap = new HashMap<>();
 
-        // Return false if cur time is not work hour
-        int hour = getCurrentHour();
-        if (hour >= 22 || hour < 6){
-            return openMovieList;
+        while (accessToCGVWeb(checkDate)){
+            List<String> openMovieList = getOpenMovieList();
+            String dateString = checkDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            openMovieMap.put(dateString, openMovieList);
+            checkDate = checkDate.plusDays(1);
+            moveToNextDay(checkDate);
         }
 
-        accessToCGVWeb(checkDate);
-
-        if (isCheckDateUrlOpen(checkDate)){
-            openMovieList = getOpenMovieList();
-        }
-
-        return openMovieList;
+        return openMovieMap;
     }
 }
 

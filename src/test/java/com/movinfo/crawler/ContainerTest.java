@@ -60,7 +60,7 @@ public class ContainerTest {
     @Test
     void testCheckImaxMovie() throws Exception {
         CGVCrawler crawler = new CGVCrawler(driver);
-        assertThat(crawler.checkImaxMovie(LocalDate.now()).size()).isNotZero();
+        assertThat(crawler.checkImaxMovie(LocalDate.now().plusDays(1)).size()).isNotZero();
     }
 
     @Test

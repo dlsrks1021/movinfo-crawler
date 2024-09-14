@@ -3,6 +3,7 @@ package com.movinfo.crawler;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 import com.movinfo.controller.MovieController;
 import com.movinfo.repository.MovieRepository;
@@ -21,16 +22,14 @@ public class App
         MovieController movieController = new MovieController(movieService, movieView);
 
         CGVCrawler crawler = new CGVCrawler();
-        for (int i = 0; i < 20; ++i){
-            LocalDate localDate = LocalDate.now().plusDays(i);
-            List<String> openMovieList = crawler.checkImaxMovie(localDate);
-            
-            for (String movie : openMovieList){
-                String date = localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-                System.out.println("Find Movie - " + movie + " : " + date);
+
+        LocalDate targetDateToStartCheck = LocalDate.now().plusDays(1);
+        Map<String, List<String>> openMovieMap = crawler.checkImaxMovie(targetDateToStartCheck);
+        
+        openMovieMap.forEach((date, movieList) -> {
+            for (String movie : movieList){
                 movieController.registerMovie(movie, date);
             }
-        }
-        
+        });
     }
 }
