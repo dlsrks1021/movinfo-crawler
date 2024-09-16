@@ -8,6 +8,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
 
@@ -47,41 +48,29 @@ public class CGVCrawler
     }
 
     private boolean accessToCGVWeb(LocalDate checkDate){
-
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        int retryCountConnect = 2;
-        for (int i = 0; i < retryCountConnect; ++i){
-            // Move to CGV URL and switch to iframe
-            try{
-                if (driver.getCurrentUrl().equals("about:blank") || i > 0){
-                    String cgvUrl = CGV_IMAX_URL + checkDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        
-                    if (i > 0){
-                        driver.switchTo().defaultContent();
-                    }
-                    driver.get(cgvUrl);
-                    wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("ifrm_movie_time_table")));
-                }
-    
-                wait.until(ExpectedConditions.presenceOfElementLocated(By.className("item")));
-            } catch (TimeoutException e){
-                System.out.println("Timeout to access CGV");
-                return false;
+        try{
+            if (driver.getCurrentUrl().equals("about:blank")){
+                String cgvUrl = CGV_IMAX_URL + checkDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+                driver.get(cgvUrl);
+                wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("ifrm_movie_time_table")));
             }
+        } catch (TimeoutException e){
+            System.out.println("Timeout to access CGV");
+            return false;
+        }
 
-            // Check the target date is open or not
-            List<WebElement> itemElements = driver.findElements(By.className("item"));
-            for (WebElement item : itemElements){
-                try {
-                    for (WebElement li : item.findElements(By.tagName("li"))){
-                        WebElement dayElement = li.findElement(By.tagName("strong"));
-                        if (checkDate.getDayOfMonth() == Integer.parseInt(dayElement.getText())){
-                            return true;
-                        }
+        // Check the target date is open or not
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.className("item")));
+        List<WebElement> itemElements = driver.findElements(By.className("item"));
+        for (WebElement item : itemElements){
+            if (item.findElement(By.tagName("li")).isDisplayed()){
+                for (WebElement li : item.findElements(By.tagName("li"))){
+                    WebElement dayElement = li.findElement(By.tagName("strong"));
+                    if (checkDate.getDayOfMonth() == Integer.parseInt(dayElement.getText())){
+                        return true;
                     }
-                } catch (NoSuchElementException | NumberFormatException e) {
-                    continue;
                 }
             }
         }
@@ -104,23 +93,32 @@ public class CGVCrawler
                 // Movie exist but is not imax
             }
         }
-
         return openMovieList;
     }
 
     private void moveToNextDay(LocalDate checkDate) {
-        List<WebElement> itemElements = driver.findElements(By.className("item"));
+        boolean isItemChecked = false;
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        List<WebElement> itemElements = driver.findElements(By.className("item-wrap"));
         for (WebElement item : itemElements){
-            try {
+            if (isItemChecked){
+                WebElement nextButton = driver.findElement(By.className("btn-next"));
+                ((JavascriptExecutor) driver).executeScript("arguments[0].click();", nextButton);
+                wait.until(ExpectedConditions.presenceOfNestedElementLocatedBy(item, By.tagName("li")));
+            }
+            
+            if (item.findElement(By.tagName("li")).isDisplayed()){
+                isItemChecked = true;
                 for (WebElement li : item.findElements(By.tagName("li"))){
                     WebElement dayElement = li.findElement(By.tagName("strong"));
                     if (checkDate.getDayOfMonth() == Integer.parseInt(dayElement.getText())){
-                        li.findElement(By.tagName("a")).click();
+                        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", li.findElement(By.tagName("a")));
+                        wait.until(ExpectedConditions.stalenessOf(li));
+                        
                         return;
                     }
                 }
-            } catch (NoSuchElementException | NumberFormatException e) {
-                continue;
             }
         }
     }
@@ -132,6 +130,12 @@ public class CGVCrawler
             List<String> openMovieList = getOpenMovieList();
             String dateString = checkDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
             openMovieMap.put(dateString, openMovieList);
+            if (!openMovieList.isEmpty()){
+                System.out.println("["+dateString+"]");
+                for (String movie : openMovieList){
+                    System.out.println(movie);
+                }
+            }
             checkDate = checkDate.plusDays(1);
             moveToNextDay(checkDate);
         }
