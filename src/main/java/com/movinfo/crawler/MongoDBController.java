@@ -6,7 +6,7 @@ import com.mongodb.client.MongoDatabase;
 
 public class MongoDBController {
 
-    private static final String MONGO_URL = "mongodb://localhost:27017";
+    private static final String MONGO_URL = System.getenv("MONGO_URL");
     private MongoClient mongoClient;
 
     public MongoDBController(){
