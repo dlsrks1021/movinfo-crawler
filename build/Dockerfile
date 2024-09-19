@@ -24,8 +24,3 @@ COPY build/cron-crawling.sh /usr/local/bin/cron-crawling.sh
 RUN chmod +x /usr/local/bin/cron-crawling.sh
 RUN echo "*/3 * * * * root /usr/local/bin/cron-crawling.sh >> /var/log/cron.log 2>&1" > /etc/cron.d/cron-crawling
 RUN chmod 0644 /etc/cron.d/cron-crawling
-
-# 실행 및 모니터링
-CMD service cron restart && \
-    touch /var/log/cron.log && \
-    tail -F /var/log/cron.log
