@@ -140,6 +140,8 @@ public class CGVCrawler
             moveToNextDay(checkDate);
         }
 
+        driver.quit();
+
         return openMovieMap;
     }
 }
