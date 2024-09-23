@@ -24,9 +24,10 @@ public class MovieRepository {
     public void saveMovie(Movie movie){
         if (!isMovieExists(movie.getName(), movie.getDate())){
             Document doc = new Document("name", movie.getName())
-                                .append("date", movie.getDate());
+                                .append("date", movie.getDate())
+                                .append("expireAt", movie.getExpireAt());
             collection.insertOne(doc);
-            System.out.println(movie.getName() + "-" + movie.getDate() + " - saved");
+            System.out.println(movie.getName() + "-" + movie.getDate() + "-(expireAt:" + movie.getExpireAt().toString() + ") - saved");
         } else{
             // throw new IllegalArgumentException();
         }

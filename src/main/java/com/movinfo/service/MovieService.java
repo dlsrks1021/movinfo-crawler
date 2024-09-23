@@ -1,5 +1,7 @@
 package com.movinfo.service;
 
+import java.util.Date;
+
 import com.movinfo.model.Movie;
 import com.movinfo.repository.MovieRepository;
 
@@ -10,8 +12,8 @@ public class MovieService {
         this.movieRepository = movieRepository;
     }
 
-    public void registerMovie(String name, String date){
-        Movie movie = new Movie(name, date);
+    public void registerMovie(String name, String date, Date expireAt){
+        Movie movie = new Movie(name, date, expireAt);
         movieRepository.saveMovie(movie);
     }
 }

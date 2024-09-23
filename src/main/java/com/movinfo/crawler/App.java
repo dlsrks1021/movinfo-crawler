@@ -1,7 +1,10 @@
 package com.movinfo.crawler;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -27,8 +30,12 @@ public class App
         Map<String, List<String>> openMovieMap = crawler.checkImaxMovie(targetDateToStartCheck);
         
         openMovieMap.forEach((date, movieList) -> {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+            LocalDateTime expireDateTime = LocalDate.parse(date, formatter).plusDays(3).atStartOfDay();
+            Date expireAt = Date.from(expireDateTime.atZone(ZoneId.systemDefault()).toInstant());
+            
             for (String movie : movieList){
-                movieController.registerMovie(movie, date);
+                movieController.registerMovie(movie, date, expireAt);
             }
         });
     }

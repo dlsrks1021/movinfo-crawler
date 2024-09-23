@@ -1,12 +1,16 @@
 package com.movinfo.model;
 
+import java.util.Date;
+
 public class Movie {
     private String name;
     private String date;
+    private Date expireAt;
 
-    public Movie(String name, String date){
+    public Movie(String name, String date, Date expireAt){
         this.name = name;
         this.date = date;
+        this.expireAt = expireAt;
     }
 
     public String getName() {
@@ -20,5 +24,11 @@ public class Movie {
     }
     public void setDate(String date) {
         this.date = date;
+    }
+    public Date getExpireAt() {
+        return expireAt;
+    }
+    public void setExpireAt(Date expireAt) {
+        this.expireAt = expireAt;
     }
 }
