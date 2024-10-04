@@ -6,3 +6,4 @@
 - [ ] Chore
 - [ ] Bug fix
 - [ ] New feature
+- [ ] BREAKING CHANGE

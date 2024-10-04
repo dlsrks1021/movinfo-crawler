@@ -33,6 +33,30 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Determine version bump
+        id: version_bump
+        run: |
+          commit_message=$(git log -1 --pretty=%B)
+          if [[ $commit_message == feat:* ]]; then
+              echo "bump=minor" >> $GITHUB_ENV
+          elif [[ $commit_message == fix:* ]]; then
+              echo "bump=patch" >> $GITHUB_ENV
+          elif [[ $commit_message == BREAKING\ CHANGE:* ]]; then
+              echo "bump=major" >> $GITHUB_ENV
+          else
+              echo "bump=none" >> $GITHUB_ENV
+          fi
+
+      - name: Update version
+        if: env.bump != 'none' && github.ref == 'refs/heads/main'
+        run: |
+          chmod +x ./build/update_version.sh
+          ./build/update_version.sh ${{ env.bump }}
+
+      - name: Read version from file
+        id: get_version
+        run: echo "VERSION=$(cat ./build/version.txt)" >> $GITHUB_ENV
+
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -41,3 +65,4 @@ jobs:
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: |
             dlsrks1021/movinfo-crawler:latest
+            dlsrks1021/movinfo-crawler:${{ env.VERSION }}
