@@ -24,6 +24,8 @@ public class App
         MovieView movieView = new MovieView();
         MovieController movieController = new MovieController(movieService, movieView);
 
+        mongoDBController.checkAndSetTTLIndex(mongoDBController.getMongoDatabase("movinfo").getCollection("movies"));
+
         CGVCrawler crawler = new CGVCrawler();
 
         LocalDate targetDateToStartCheck = LocalDate.now().plusDays(1);
