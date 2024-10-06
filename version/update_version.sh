@@ -2,7 +2,7 @@
 
 set -e
 
-current_version=$(cat ./build/version.txt)
+current_version=$(cat ./version/version.txt)
 
 new_version=""
 
@@ -22,4 +22,4 @@ case $1 in
     ;;
 esac
 
-echo $new_version > ./build/version.txt
+echo $new_version > ./version/version.txt
