@@ -9,8 +9,6 @@ on:
       - 'build/**'
       - 'src/**'
       - 'pom.xml'
-    paths-ignore:
-      - 'build/version.txt'
 
 jobs:
   build:
