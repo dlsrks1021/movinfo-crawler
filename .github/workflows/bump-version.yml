@@ -49,22 +49,20 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Commit and Push version update
+      - name: Specify branch name
         if: env.bump != 'none'
         run: |
           branch_name="version-bump-${{ env.VERSION }}-$(date +'%Y%m%d')"
-          git checkout -b $branch_name
-          git add ./version/version.txt
-          git commit -m "Bump version to ${{ env.VERSION }}"
-          git push origin $branch_name
-
           echo "branch_name=$branch_name" >> $GITHUB_ENV
 
       - name: Create Pull Request
+        if: env.bump != 'none'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base: main
-          head: ${{ env.branch_name }}
-          title: "Bump version to $new_version"
-          body: "This PR bumps the version to $new_version"
+          branch: ${{ env.branch_name }}
+          add-paths: ./version/version.txt
+          commit-message: "Bump version to ${{ env.VERSION }}"
+          title: "Bump version to ${{ env.VERSION }}"
+          body: "This PR bumps the version to ${{ env.VERSION }}"
