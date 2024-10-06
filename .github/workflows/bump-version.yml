@@ -1,0 +1,70 @@
+name: Bump Version
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main 
+    paths:
+      - '.github/workflows/**'
+      - 'build/**'
+      - 'src/**'
+      - 'pom.xml'
+
+jobs:
+  bump-version:
+    if: github.event.pull_request.merged == true 
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Determine version bump
+        id: version_bump
+        run: |
+          commit_message=$(git log -1 --pretty=%B)
+          if [[ $commit_message == feat:* ]]; then
+              echo "bump=minor" >> $GITHUB_ENV
+          elif [[ $commit_message == fix:* ]]; then
+              echo "bump=patch" >> $GITHUB_ENV
+          elif [[ $commit_message == BREAKING\ CHANGE:* ]]; then
+              echo "bump=major" >> $GITHUB_ENV
+          else
+              echo "bump=none" >> $GITHUB_ENV
+          fi
+
+      - name: Update version
+        if: env.bump != 'none'
+        run: |
+          chmod +x ./version/update_version.sh
+          ./version/update_version.sh ${{ env.bump }}
+
+      - name: Read version from file
+        id: get_version
+        run: echo "VERSION=$(cat ./version/version.txt)" >> $GITHUB_ENV
+
+      - name: Set up Git credentials
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit and Push version update
+        if: env.bump != 'none'
+        run: |
+          branch_name="version-bump-${{ env.VERSION }}-$(date +'%Y%m%d')"
+          git checkout -b $branch_name
+          git add ./version/version.txt
+          git commit -m "Bump version to ${{ env.VERSION }}"
+          git push origin $branch_name
+
+          echo "branch_name=$branch_name" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: main
+          head: ${{ env.branch_name }}
+          title: "Bump version to $new_version"
+          body: "This PR bumps the version to $new_version"
