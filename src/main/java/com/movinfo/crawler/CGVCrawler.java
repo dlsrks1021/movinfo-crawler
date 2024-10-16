@@ -140,9 +140,13 @@ public class CGVCrawler
             moveToNextDay(checkDate);
         }
 
-        driver.quit();
-
         return openMovieMap;
+    }
+
+    public void cleanUp(){
+        if (driver != null){
+            driver.quit();
+        }
     }
 }
 
