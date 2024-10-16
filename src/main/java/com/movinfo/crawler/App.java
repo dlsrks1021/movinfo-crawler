@@ -1,14 +1,12 @@
 package com.movinfo.crawler;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import com.movinfo.controller.MovieController;
+import com.movinfo.model.Movie;
 import com.movinfo.repository.MovieRepository;
 import com.movinfo.service.MovieService;
 
@@ -28,6 +26,7 @@ public class App
 
         // execute
         checkAndSetTTLIndex(mongoDBController);
+        updateMissingScreentype(mongoDBController);
         registerMovies(movieController, cgvCrawler);
 
         // cleanup
@@ -55,19 +54,23 @@ public class App
         );
     }
 
+    /**
+     * Old version of Movinfo-Crawler have no screentype but they are imax.
+     * So, save screentype as imax if there is no screentype
+     * 
+     * @param mongoDBController
+     * 
+     */
+    public void updateMissingScreentype(MongoDBController mongoDBController) {
+        mongoDBController.getMongoDatabase("movinfo").getCollection("movies").updateMany(
+            Filters.exists("screentype", false),
+            Updates.addToSet("screentype", "imax")
+        );
+    }
+
     private void registerMovies(MovieController movieController, CGVCrawler cgvCrawler){
         LocalDate targetDateToStartCheck = LocalDate.now().plusDays(1);
-
-        Map<String, List<String>> openMovieMap = cgvCrawler.checkImaxMovie(targetDateToStartCheck);
-
-        openMovieMap.forEach((date, movieList) -> {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-            LocalDateTime expireDateTime = LocalDate.parse(date, formatter).plusDays(3).atStartOfDay();
-            Date expireAt = Date.from(expireDateTime.atZone(ZoneId.systemDefault()).toInstant());
-            
-            for (String movie : movieList){
-                movieController.registerMovie(movie, date, expireAt);
-            }
-        });
+        List<Movie> openMovieList = cgvCrawler.getOpenMovies(targetDateToStartCheck);
+        movieController.registerMovies(openMovieList);
     }
 }

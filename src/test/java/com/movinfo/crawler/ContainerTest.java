@@ -58,9 +58,9 @@ public class ContainerTest {
     }
 
     @Test
-    void testCheckImaxMovie() throws Exception {
+    void testGetOpenMovie() throws Exception {
         CGVCrawler crawler = new CGVCrawler(driver);
-        assertThat(crawler.checkImaxMovie(LocalDate.now().plusDays(1)).size()).isNotZero();
+        assertThat(crawler.getOpenMovies(LocalDate.now().plusDays(1)).size()).isNotZero();
     }
 
     @Test

@@ -12,8 +12,12 @@ public class MovieService {
         this.movieRepository = movieRepository;
     }
 
-    public void registerMovie(String name, String date, Date expireAt){
-        Movie movie = new Movie(name, date, expireAt);
+    public void registerMovie(String name, String date, String screentype, Date expireAt){
+        Movie movie = new Movie(name, date, screentype, expireAt);
+        movieRepository.saveMovie(movie);
+    }
+
+    public void registerMovie(Movie movie){
         movieRepository.saveMovie(movie);
     }
 }
