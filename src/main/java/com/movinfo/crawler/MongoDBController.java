@@ -39,4 +39,10 @@ public class MongoDBController {
             collection.createIndex(new Document("expireAt", 1), indexOptions);
         }
     }
+
+    public void cleanUp(){
+        if (mongoClient != null){
+            mongoClient.close();
+        }
+    }
 }
