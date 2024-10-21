@@ -19,8 +19,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import com.movinfo.model.Movie;
 
 public class CGVCrawler
 {
@@ -78,19 +81,20 @@ public class CGVCrawler
         return false;
     }
 
-    private List<String> getOpenMovieList(){
-        List<String> openMovieList = new ArrayList<>();
+    private List<Movie> getOpenMovieList(List<Movie> openMovieList, String dateString){
         List<WebElement> elementList = driver.findElements(By.className("col-times"));
         for(WebElement element : elementList){
             String movieName = element.findElement(By.tagName("a")).getText();
-            try{
-                if (element.findElement(By.className("imax")) != null){
-                    if (!openMovieList.contains(movieName)){
-                        openMovieList.add(movieName);
-                    }
+
+            List<WebElement> screentypeElementList = element.findElements(By.className("screentype"));
+            if (screentypeElementList.size() == 0){
+                Movie movie = new Movie(movieName, dateString, "default", null);
+                openMovieList.add(movie);
+            } else {
+                for (WebElement screenElement : screentypeElementList){
+                    Movie movie = new Movie(movieName, dateString, screenElement.getText(), null);
+                    openMovieList.add(movie);
                 }
-            }catch(NoSuchElementException e){
-                // Movie exist but is not imax
             }
         }
         return openMovieList;
@@ -123,24 +127,25 @@ public class CGVCrawler
         }
     }
 
-    public Map<String, List<String>> checkImaxMovie(LocalDate checkDate){
-        Map<String, List<String>> openMovieMap = new HashMap<>();
+    public List<Movie> getOpenMovies(LocalDate checkDate){
+        List<Movie> openMovieList = new LinkedList<>();
 
         while (accessToCGVWeb(checkDate)){
-            List<String> openMovieList = getOpenMovieList();
             String dateString = checkDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-            openMovieMap.put(dateString, openMovieList);
+            getOpenMovieList(openMovieList, dateString);
+
             if (!openMovieList.isEmpty()){
                 System.out.println("["+dateString+"]");
-                for (String movie : openMovieList){
-                    System.out.println(movie);
+                for (Movie movie : openMovieList){
+                    System.out.println(movie.getName());
                 }
             }
+
             checkDate = checkDate.plusDays(1);
             moveToNextDay(checkDate);
         }
 
-        return openMovieMap;
+        return openMovieList;
     }
 
     public void cleanUp(){

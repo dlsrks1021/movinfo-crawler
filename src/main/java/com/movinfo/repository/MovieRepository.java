@@ -4,6 +4,8 @@ import org.bson.Document;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import com.movinfo.model.Movie;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -25,11 +27,18 @@ public class MovieRepository {
         if (!isMovieExists(movie.getName(), movie.getDate())){
             Document doc = new Document("name", movie.getName())
                                 .append("date", movie.getDate())
+                                .append("screentype", movie.getScreentype())
                                 .append("expireAt", movie.getExpireAt());
             collection.insertOne(doc);
-            System.out.println(movie.getName() + "-" + movie.getDate() + "-(expireAt:" + movie.getExpireAt().toString() + ") - saved");
+            System.out.println(movie.getName() + "-" + movie.getDate() + "-" + movie.getScreentype() + "-(expireAt:" + movie.getExpireAt().toString() + ") - saved");
         } else{
-            // throw new IllegalArgumentException();
+            collection.updateOne(
+                Filters.and(
+                    Filters.eq("name", movie.getName()),
+                    Filters.eq("date", movie.getDate())
+                ),
+                Updates.addToSet("screentype", movie.getScreentype())
+            );
         }
     }
 }
