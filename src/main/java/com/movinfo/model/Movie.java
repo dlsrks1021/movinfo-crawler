@@ -4,15 +4,14 @@ import java.util.Date;
 
 public class Movie {
     private String name;
-    private String date;
-    private String screentype;
+    private String dateOpen;
+    private String poster;
     private Date expireAt;
 
-    public Movie(String name, String date, String screentype, Date expireAt){
+    public Movie(String name, String dateOpen, String poster){
         this.name = name;
-        this.date = date;
-        this.screentype = screentype;
-        this.expireAt = expireAt;
+        this.dateOpen = dateOpen;
+        this.poster = poster;
     }
 
     public String getName() {
@@ -21,17 +20,17 @@ public class Movie {
     public void setName(String name) {
         this.name = name;
     }
-    public String getDate() {
-        return date;
+    public String getDateOpen() {
+        return dateOpen;
     }
-    public void setDate(String date) {
-        this.date = date;
+    public void setDateOpen(String dateOpen) {
+        this.dateOpen = dateOpen;
     }
-    public String getScreentype() {
-        return screentype;
+    public String getPoster() {
+        return poster;
     }
-    public void setScreentype(String screentype) {
-        this.screentype = screentype;
+    public void setPoster(String poster) {
+        this.poster = poster;
     }
     public Date getExpireAt() {
         return expireAt;

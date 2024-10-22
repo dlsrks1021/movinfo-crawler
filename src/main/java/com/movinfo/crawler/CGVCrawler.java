@@ -17,18 +17,21 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.time.format.DateTimeParseException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import com.movinfo.model.Movie;
+import com.movinfo.model.Screen;
 
 public class CGVCrawler
 {
     private WebDriver driver;
-    private static final String CGV_IMAX_URL = "http://www.cgv.co.kr/reserve/show-times/?areacode=01&theaterCode=0013&date=";
+
+    private static final String EMPTY_URL = "about:blank";
+    private static final String TIMETABLE_URL = "http://www.cgv.co.kr/reserve/show-times/?areacode=01&theaterCode=0013&date=";
+    private static final String MOVIECHART_URL = "http://www.cgv.co.kr/movies/";
+    private static final String PREMOVIECHART_URL = "http://www.cgv.co.kr/movies/pre-movies.aspx";
 
     public CGVCrawler(){
         try {
@@ -50,13 +53,13 @@ public class CGVCrawler
         
     }
 
-    private boolean accessToCGVWeb(LocalDate checkDate){
+    private boolean accessToTimeTable(LocalDate checkDate){
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
         try{
-            if (driver.getCurrentUrl().equals("about:blank")){
-                String cgvUrl = CGV_IMAX_URL + checkDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-                driver.get(cgvUrl);
+            if (driver.getCurrentUrl().equals(EMPTY_URL)){
+                String timeTableUrl = TIMETABLE_URL + checkDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+                driver.get(timeTableUrl);
                 wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("ifrm_movie_time_table")));
             }
         } catch (TimeoutException e){
@@ -81,23 +84,25 @@ public class CGVCrawler
         return false;
     }
 
-    private List<Movie> getOpenMovieList(List<Movie> openMovieList, String dateString){
+    private List<Screen> getScreenList(List<Screen> screenList, String dateString){
         List<WebElement> elementList = driver.findElements(By.className("col-times"));
         for(WebElement element : elementList){
             String movieName = element.findElement(By.tagName("a")).getText();
 
             List<WebElement> screentypeElementList = element.findElements(By.className("screentype"));
+
+            Screen screen = new Screen(movieName, dateString);
+
             if (screentypeElementList.size() == 0){
-                Movie movie = new Movie(movieName, dateString, "default", null);
-                openMovieList.add(movie);
+                screen.addScreentype("default");
             } else {
                 for (WebElement screenElement : screentypeElementList){
-                    Movie movie = new Movie(movieName, dateString, screenElement.getText(), null);
-                    openMovieList.add(movie);
+                    screen.addScreentype(screenElement.getText());
                 }
             }
+            screenList.add(screen);
         }
-        return openMovieList;
+        return screenList;
     }
 
     private void moveToNextDay(LocalDate checkDate) {
@@ -127,25 +132,74 @@ public class CGVCrawler
         }
     }
 
-    public List<Movie> getOpenMovies(LocalDate checkDate){
-        List<Movie> openMovieList = new LinkedList<>();
+    public List<Screen> getOpenScreens(LocalDate checkDate){
+        List<Screen> screenList = new LinkedList<>();
 
-        while (accessToCGVWeb(checkDate)){
+        if (!driver.getCurrentUrl().equals(EMPTY_URL)){
+            driver.get(EMPTY_URL);
+        }
+        
+        while (accessToTimeTable(checkDate)){
             String dateString = checkDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-            getOpenMovieList(openMovieList, dateString);
-
-            if (!openMovieList.isEmpty()){
-                System.out.println("["+dateString+"]");
-                for (Movie movie : openMovieList){
-                    System.out.println(movie.getName());
-                }
-            }
+            getScreenList(screenList, dateString);
 
             checkDate = checkDate.plusDays(1);
             moveToNextDay(checkDate);
         }
 
-        return openMovieList;
+        return screenList;
+    }
+
+    private void accessToMovieChart(){
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        driver.get(MOVIECHART_URL);
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.className("box-image")));
+    }
+
+    private void accessToPreMovieChart(){
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        driver.get(PREMOVIECHART_URL);
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.className("box-image")));
+    }
+
+    private void getMovieList(List<Movie> movieList){
+        List<WebElement> olElements = driver.findElements(By.tagName("ol"));
+        olElements.forEach((olElement) -> {
+            List<WebElement> movieBoxList = olElement.findElements(By.tagName("li"));
+            movieBoxList.forEach((movieBox) -> {
+                try {
+                    String movieName = movieBox.findElement(By.className("title")).getText();
+                    String dateOpen = movieBox.findElement(By.className("txt-info")).getText();
+                    String imageSource = movieBox.findElement(By.tagName("img")).getAttribute("src");
+
+                    // Change Date Format
+                    DateTimeFormatter oldFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+                    DateTimeFormatter newFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                    dateOpen = LocalDate.parse(dateOpen.split(" ")[0], oldFormatter).format(newFormatter);
+
+                    Movie movie = new Movie(movieName, dateOpen, imageSource);
+                    movieList.add(movie);   
+                } catch (NoSuchElementException | DateTimeParseException e){
+                    return;
+                }
+            });
+        });
+    }
+
+    public List<Movie> getOpenMovies(){
+        List<Movie> movieList = new LinkedList<>();
+
+        accessToMovieChart();
+        getMovieList(movieList);
+
+        accessToPreMovieChart();
+        getMovieList(movieList);
+
+        return movieList;
     }
 
     public void cleanUp(){
