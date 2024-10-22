@@ -1,8 +1,13 @@
 package com.movinfo.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import com.movinfo.model.Movie;
+import com.movinfo.model.Screen;
 import com.movinfo.repository.MovieRepository;
 
 public class MovieService {
@@ -12,12 +17,39 @@ public class MovieService {
         this.movieRepository = movieRepository;
     }
 
-    public void registerMovie(String name, String date, String screentype, Date expireAt){
-        Movie movie = new Movie(name, date, screentype, expireAt);
-        movieRepository.saveMovie(movie);
+    public void registerMovie(Movie movie){
+        movie.setExpireAt(getExpireDate(movie.getDateOpen()));
+        if (!movieRepository.isMovieExists(movie.getName())){
+            movieRepository.saveMovie(movie);
+            System.out.println(movie.getName() + " " + movie.getDateOpen() + " (expireAt: " + movie.getExpireAt().toString() + ") - saved");
+        }
     }
 
-    public void registerMovie(Movie movie){
-        movieRepository.saveMovie(movie);
+    private void logScreen(Screen screen){
+        StringBuilder logOutput = new StringBuilder();
+        
+        logOutput.append(screen.getMovieName() + " " + screen.getScreenDate());
+        logOutput.append(" [");
+        screen.getScreentypes().forEach((screentype) -> {
+            logOutput.append(" " + screentype);
+        });
+        logOutput.append(" ]");
+
+        System.out.println(logOutput.toString());
+    }
+
+    public void updateMovieByScreen(Screen screen){
+        if (movieRepository.isMovieExists(screen.getMovieName())){
+            movieRepository.updateScreen(screen);
+            logScreen(screen);
+        }
+    }
+
+    private Date getExpireDate(String dateOpen){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDateTime expireDateTime = LocalDate.parse(dateOpen, formatter).plusDays(90).atStartOfDay();
+        Date expireAt = Date.from(expireDateTime.atZone(ZoneId.systemDefault()).toInstant());
+
+        return expireAt;
     }
 }

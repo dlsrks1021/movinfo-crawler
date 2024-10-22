@@ -3,10 +3,9 @@ package com.movinfo.crawler;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Updates;
 import com.movinfo.controller.MovieController;
 import com.movinfo.model.Movie;
+import com.movinfo.model.Screen;
 import com.movinfo.repository.MovieRepository;
 import com.movinfo.service.MovieService;
 
@@ -26,8 +25,8 @@ public class App
 
         // execute
         checkAndSetTTLIndex(mongoDBController);
-        updateMissingScreentype(mongoDBController);
-        registerMovies(movieController, cgvCrawler);
+        checkMoviesOpen(movieController, cgvCrawler);
+        checkScreensOpen(movieController, cgvCrawler);
 
         // cleanup
         cgvCrawler.cleanUp();
@@ -54,23 +53,20 @@ public class App
         );
     }
 
-    /**
-     * Old version of Movinfo-Crawler have no screentype but they are imax.
-     * So, save screentype as imax if there is no screentype
-     * 
-     * @param mongoDBController
-     * 
-     */
-    public void updateMissingScreentype(MongoDBController mongoDBController) {
-        mongoDBController.getMongoDatabase("movinfo").getCollection("movies").updateMany(
-            Filters.exists("screentype", false),
-            Updates.addToSet("screentype", "imax")
-        );
+    private void checkScreensOpen(MovieController movieController, CGVCrawler cgvCrawler){
+        LocalDate targetDateToStartCheck = LocalDate.now().plusDays(1);
+        List<Screen> screenList = cgvCrawler.getOpenScreens(targetDateToStartCheck);
+
+        screenList.forEach((screen) -> {
+            movieController.updateMovieByScreen(screen);
+        });
     }
 
-    private void registerMovies(MovieController movieController, CGVCrawler cgvCrawler){
-        LocalDate targetDateToStartCheck = LocalDate.now().plusDays(1);
-        List<Movie> openMovieList = cgvCrawler.getOpenMovies(targetDateToStartCheck);
-        movieController.registerMovies(openMovieList);
+    private void checkMoviesOpen(MovieController movieController, CGVCrawler cgvCrawler){
+        List<Movie> movieList = cgvCrawler.getOpenMovies();
+
+        movieList.forEach((movie) -> {
+            movieController.registerMovie(movie);
+        });
     }
 }

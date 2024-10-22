@@ -7,9 +7,14 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.movinfo.model.Movie;
+import com.movinfo.model.Screen;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.and;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 public class MovieRepository {
     private MongoCollection<Document> collection;
@@ -18,27 +23,41 @@ public class MovieRepository {
         this.collection = database.getCollection("movies");
     }
 
-    private boolean isMovieExists(String name, String date){
-        return collection.find(and(eq("name", name), eq("date", date)))
+    public boolean isMovieExists(String name){
+        return collection.find(eq("name", name))
                          .first() != null;
     }
 
-    public void saveMovie(Movie movie){
-        if (!isMovieExists(movie.getName(), movie.getDate())){
-            Document doc = new Document("name", movie.getName())
-                                .append("date", movie.getDate())
-                                .append("screentype", movie.getScreentype())
-                                .append("expireAt", movie.getExpireAt());
-            collection.insertOne(doc);
-            System.out.println(movie.getName() + "-" + movie.getDate() + "-" + movie.getScreentype() + "-(expireAt:" + movie.getExpireAt().toString() + ") - saved");
-        } else{
-            collection.updateOne(
-                Filters.and(
-                    Filters.eq("name", movie.getName()),
-                    Filters.eq("date", movie.getDate())
-                ),
-                Updates.addToSet("screentype", movie.getScreentype())
-            );
+    private byte[] downloadImage(String imageSrc){
+        try {
+            URL url = new URL(imageSrc);
+            InputStream in = url.openStream();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1){
+                baos.write(buffer, 0, bytesRead);
+            }
+            return baos.toByteArray();
+        } catch (IOException e){
+            return null;
         }
+    }
+
+    public void saveMovie(Movie movie){
+        Document doc = new Document("name", movie.getName())
+                            .append("dateOpen", movie.getDateOpen())
+                            .append("poster", downloadImage(movie.getPoster()))
+                            .append("expireAt", movie.getExpireAt());
+        collection.insertOne(doc);
+    }
+
+    public void updateScreen(Screen screen){
+        collection.updateOne(
+            Filters.and(
+                Filters.eq("name", screen.getMovieName())
+            ),
+            Updates.set("screen." + screen.getScreenDate(), screen.getScreentypes())
+        );
     }
 }

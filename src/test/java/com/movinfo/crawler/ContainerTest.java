@@ -58,9 +58,15 @@ public class ContainerTest {
     }
 
     @Test
+    void testGetOpenScreen() throws Exception {
+        CGVCrawler crawler = new CGVCrawler(driver);
+        assertThat(crawler.getOpenScreens(LocalDate.now().plusDays(1)).size()).isNotZero();
+    }
+
+    @Test
     void testGetOpenMovie() throws Exception {
         CGVCrawler crawler = new CGVCrawler(driver);
-        assertThat(crawler.getOpenMovies(LocalDate.now().plusDays(1)).size()).isNotZero();
+        assertThat(crawler.getOpenMovies().size()).isNotZero();
     }
 
     @Test
