@@ -4,11 +4,11 @@ import java.util.Date;
 
 public class Movie {
     private String name;
-    private String dateOpen;
+    private Date dateOpen;
     private String poster;
     private Date expireAt;
 
-    public Movie(String name, String dateOpen, String poster){
+    public Movie(String name, Date dateOpen, String poster){
         this.name = name;
         this.dateOpen = dateOpen;
         this.poster = poster;
@@ -20,10 +20,10 @@ public class Movie {
     public void setName(String name) {
         this.name = name;
     }
-    public String getDateOpen() {
+    public Date getDateOpen() {
         return dateOpen;
     }
-    public void setDateOpen(String dateOpen) {
+    public void setDateOpen(Date dateOpen) {
         this.dateOpen = dateOpen;
     }
     public String getPoster() {

@@ -1,9 +1,6 @@
 package com.movinfo.service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
 
 import com.movinfo.model.Movie;
@@ -45,11 +42,11 @@ public class MovieService {
         }
     }
 
-    private Date getExpireDate(String dateOpen){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDateTime expireDateTime = LocalDate.parse(dateOpen, formatter).plusDays(90).atStartOfDay();
-        Date expireAt = Date.from(expireDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    private Date getExpireDate(Date dateOpen){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(dateOpen);
+        calendar.add(Calendar.DAY_OF_YEAR, 90);
 
-        return expireAt;
+        return calendar.getTime();
     }
 }
