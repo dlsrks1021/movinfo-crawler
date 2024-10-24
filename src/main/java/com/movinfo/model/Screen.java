@@ -1,14 +1,15 @@
 package com.movinfo.model;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Screen {
     private String movieName;
-    private String screenDate;
+    private Date screenDate;
     private List<String> screentypes;
 
-    public Screen(String movieName, String screenDate){
+    public Screen(String movieName, Date screenDate){
         this.movieName = movieName;
         this.screenDate = screenDate;
         screentypes = new LinkedList<>();
@@ -20,10 +21,10 @@ public class Screen {
     public void setMovieName(String movieName) {
         this.movieName = movieName;
     }
-    public String getScreenDate() {
+    public Date getScreenDate() {
         return screenDate;
     }
-    public void setScreenDate(String screenDate) {
+    public void setScreenDate(Date screenDate) {
         this.screenDate = screenDate;
     }
     public List<String> getScreentypes() {

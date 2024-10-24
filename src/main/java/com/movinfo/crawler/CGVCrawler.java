@@ -14,10 +14,13 @@ import org.openqa.selenium.TimeoutException;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -91,16 +94,21 @@ public class CGVCrawler
 
             List<WebElement> screentypeElementList = element.findElements(By.className("screentype"));
 
-            Screen screen = new Screen(movieName, dateString);
-
-            if (screentypeElementList.size() == 0){
-                screen.addScreentype("default");
-            } else {
-                for (WebElement screenElement : screentypeElementList){
-                    screen.addScreentype(screenElement.getText());
+            try {
+                Date screenDate = parseDateString(dateString, "yyyyMMdd");
+                Screen screen = new Screen(movieName, screenDate);
+    
+                if (screentypeElementList.isEmpty()){
+                    screen.addScreentype("default");
+                } else {
+                    for (WebElement screenElement : screentypeElementList){
+                        screen.addScreentype(screenElement.getText());
+                    }
                 }
+                screenList.add(screen);   
+            } catch (ParseException e) {
+                continue;
             }
-            screenList.add(screen);
         }
         return screenList;
     }
@@ -166,24 +174,36 @@ public class CGVCrawler
         wait.until(ExpectedConditions.presenceOfElementLocated(By.className("box-image")));
     }
 
+    private Date parseDateString (String dateString, String format) throws ParseException{
+        SimpleDateFormat dateFormat = new SimpleDateFormat(format);
+        Date date = dateFormat.parse(dateString);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return calendar.getTime();
+    }
+
     private void getMovieList(List<Movie> movieList){
         List<WebElement> olElements = driver.findElements(By.tagName("ol"));
         olElements.forEach((olElement) -> {
             List<WebElement> movieBoxList = olElement.findElements(By.tagName("li"));
-            movieBoxList.forEach((movieBox) -> {
+            movieBoxList.forEach(movieBox -> {
                 try {
                     String movieName = movieBox.findElement(By.className("title")).getText();
-                    String dateOpen = movieBox.findElement(By.className("txt-info")).getText();
+                    String date = movieBox.findElement(By.className("txt-info")).getText();
                     String imageSource = movieBox.findElement(By.tagName("img")).getAttribute("src");
 
                     // Change Date Format
-                    DateTimeFormatter oldFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
-                    DateTimeFormatter newFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                    dateOpen = LocalDate.parse(dateOpen.split(" ")[0], oldFormatter).format(newFormatter);
+                    Date dateOpen = parseDateString(date, "yyyy.MM.dd");
 
                     Movie movie = new Movie(movieName, dateOpen, imageSource);
                     movieList.add(movie);   
-                } catch (NoSuchElementException | DateTimeParseException e){
+                } catch (NoSuchElementException | ParseException e){
                     return;
                 }
             });
