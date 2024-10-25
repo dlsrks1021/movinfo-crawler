@@ -99,7 +99,7 @@ public class CGVCrawler
                 Screen screen = new Screen(movieName, screenDate);
     
                 if (screentypeElementList.isEmpty()){
-                    screen.addScreentype("default");
+                    screen.addScreentype("2D");
                 } else {
                     for (WebElement screenElement : screentypeElementList){
                         screen.addScreentype(screenElement.getText());
