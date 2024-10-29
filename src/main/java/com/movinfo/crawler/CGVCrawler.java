@@ -18,7 +18,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
@@ -113,11 +115,38 @@ public class CGVCrawler
         return screenList;
     }
 
-    private void moveToNextDay(LocalDate checkDate) {
+    public static long calculateDayDifference(String dateStr1, String dateStr2) throws ParseException{
+        SimpleDateFormat dateFormat = new SimpleDateFormat("M월d");
+
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+
+        Date date1 = dateFormat.parse(dateStr1);
+        Date date2 = dateFormat.parse(dateStr2);
+
+        Calendar cal1 = Calendar.getInstance();
+        Calendar cal2 = Calendar.getInstance();
+        cal1.setTime(date1);
+        cal1.set(Calendar.YEAR, currentYear);
+        cal2.setTime(date2);
+        cal2.set(Calendar.YEAR, currentYear);
+
+        if (cal2.before(cal1)) {
+            cal2.add(Calendar.YEAR, 1);
+        }
+
+        Date adjustedDate1 = cal1.getTime();
+        Date adjustedDate2 = cal2.getTime();
+
+        return  ChronoUnit.DAYS.between(adjustedDate1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                                                   adjustedDate2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+    }
+
+    private long moveToNextDay(LocalDate checkDate, List<String> dateVisitList) {
         boolean isItemChecked = false;
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
         List<WebElement> itemElements = driver.findElements(By.className("item-wrap"));
+        boolean isPrevDateFound = false;
         for (WebElement item : itemElements){
             if (isItemChecked){
                 WebElement nextButton = driver.findElement(By.className("btn-next"));
@@ -128,16 +157,35 @@ public class CGVCrawler
             if (item.findElement(By.tagName("li")).isDisplayed()){
                 isItemChecked = true;
                 for (WebElement li : item.findElements(By.tagName("li"))){
+                    WebElement monthElement = li.findElement(By.tagName("span"));
                     WebElement dayElement = li.findElement(By.tagName("strong"));
+                    String dateVisit = monthElement.getText() + dayElement.getText();
+
+                    if (isPrevDateFound){
+                        if (dateVisitList.contains(dateVisit)){
+                            return -1;
+                        } else {
+                            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", li.findElement(By.tagName("a")));
+                            wait.until(ExpectedConditions.stalenessOf(li));
+
+                            try{
+                                String prevDateVisit = dateVisitList.get(dateVisitList.size() - 1);
+                                return calculateDayDifference(prevDateVisit, dateVisit);
+                            } catch(ParseException e){
+                                return -1;
+                            }
+                        }
+                    }
+
                     if (checkDate.getDayOfMonth() == Integer.parseInt(dayElement.getText())){
-                        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", li.findElement(By.tagName("a")));
-                        wait.until(ExpectedConditions.stalenessOf(li));
-                        
-                        return;
+                        isPrevDateFound = true;
+                        dateVisitList.add(dateVisit);
                     }
                 }
             }
         }
+
+        return -1;
     }
 
     public List<Screen> getOpenScreens(LocalDate checkDate){
@@ -147,12 +195,15 @@ public class CGVCrawler
             driver.get(EMPTY_URL);
         }
         
+        List<String> dateVisitList = new LinkedList<>();
         while (accessToTimeTable(checkDate)){
             String dateString = checkDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
             getScreenList(screenList, dateString);
 
-            checkDate = checkDate.plusDays(1);
-            moveToNextDay(checkDate);
+            long daysToAdd = moveToNextDay(checkDate, dateVisitList);
+            if (daysToAdd == -1)
+                break;
+            checkDate = checkDate.plusDays(daysToAdd);
         }
 
         return screenList;
