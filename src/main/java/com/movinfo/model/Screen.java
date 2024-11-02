@@ -31,6 +31,7 @@ public class Screen {
         return screentypes;
     }
     public void addScreentype(String screentype) {
-        screentypes.add(screentype);
+        if (!screentypes.contains(screentype))
+            screentypes.add(screentype);
     }
 }
