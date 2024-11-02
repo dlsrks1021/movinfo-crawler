@@ -15,10 +15,14 @@ This project is part of a larger system called movinfo, which provides real-time
 - MongoDB (tested 7.0.14)
 
 ## Environment Variables
-| Variable            | Info                          |
-|---------------------|-------------------------------|
-| MONGO_URL           | Connection String for MongoDB |
-| DISCORD_WEBHOOK_URL | Webhook String for Discord    |
+| Variable            | Info                                                |
+|---------------------|-----------------------------------------------------|
+| MONGO_URL           | Connection String for MongoDB                       |
+| BOT_TOKEN           | Token of Discord Bot                                |
+| GUILD_ID            | ID of Discord Server                                |
+| NOTI_SET_CHANNEL_ID | ID of channel to set screen open notification       |
+| MOVIE_CHANNEL_ID    | ID of channel that informs movies to be released    |
+| SCREEN_CHANNEL_ID   | ID of channel that gives screen open notifications  |
 
 ## How to Deploy in Kubernetes
 ``` yml
@@ -63,8 +67,16 @@ spec:
         - name: messenger
           image: dlsrks1021/movinfo-messenger:latest
           env:
-          - name: DISCORD_WEBHOOK_URL
-            value: your_string
           - name: MONGO_URL
+            value: your_string
+          - name: BOT_TOKEN
+            value: your_string
+          - name: GUILD_ID
+            value: your_string
+          - name: NOTI_SET_CHANNEL_ID
+            value: your_string
+          - name: MOVIE_CHANNEL_ID
+            value: your_string
+          - name: SCREEN_CHANNEL_ID
             value: your_string
 ```
